@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deadline Risk Engine</title>
+    <meta
+      name="description"
+      content="A traffic-light dashboard that scores deadline risk using deadline, task size, priority, history, calendar load, and energy pattern."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb orb-a"></div>
+    <div class="bg-orb orb-b"></div>
+    <div class="bg-grid"></div>
+
+    <div class="panic-mode-toggle">
+      <button id="panicModeBtn" class="btn btn-panic">Panic Mode Off</button>
+    </div>
+
+    <main id="normalView" class="shell">
+      <section class="hero card">
+        <div>
+          <p class="eyebrow">Deadline Risk Engine</p>
+          <h1>See which deadlines are drifting toward danger before they slip.</h1>
+          <p class="lede">
+            Combine deadline pressure, task size, priority, history, calendar load, and your energy pattern into one clear risk score. Then break tasks down, auto-schedule, and get context-aware nudges.
+          </p>
+        </div>
+        <div class="hero-note">
+          <span class="pill pill-live">AI-Powered</span>
+          <p>Autonomous breakdown, time-blocking, panic mode, and chat assistant included.</p>
+        </div>
+      </section>
+
+      <section class="grid-layout">
+        <section class="card form-card">
+          <div class="section-head">
+            <h2>Risk Inputs</h2>
+            <p>Model your task deadline and constraints.</p>
+          </div>
+
+          <form id="risk-form" class="controls" autocomplete="off">
+            <label>
+              Deadline urgency
+              <input id="deadlineDays" type="range" min="1" max="30" value="7" />
+              <span class="value" data-value-for="deadlineDays">7 days</span>
+            </label>
+
+            <label>
+              Task size
+              <input id="taskSize" type="range" min="1" max="10" value="6" />
+              <span class="value" data-value-for="taskSize">6 / 10</span>
+            </label>
+
+            <label>
+              Priority
+              <select id="priority">
+                <option value="1">Low</option>
+                <option value="2">Normal</option>
+                <option value="3" selected>High</option>
+                <option value="4">Critical</option>
+              </select>
+            </label>
+
+            <label>
+              User history
+              <select id="history">
+                <option value="1">Usually on time</option>
+                <option value="2" selected>Mixed results</option>
+                <option value="3">Often slips</option>
+              </select>
+            </label>
+
+            <label>
+              Calendar load
+              <input id="calendarLoad" type="range" min="0" max="100" value="45" />
+              <span class="value" data-value-for="calendarLoad">45%</span>
+            </label>
+
+            <label>
+              Energy pattern
+              <select id="energyPattern">
+                <option value="1">High energy today</option>
+                <option value="2" selected>Average energy</option>
+                <option value="3">Low energy window</option>
+              </select>
+            </label>
+          </form>
+        </section>
+
+        <section class="card result-card">
+          <div class="section-head">
+            <h2>Risk Output</h2>
+            <p>Your current risk score and breakdown.</p>
+          </div>
+
+          <div class="dashboard">
+            <div class="traffic-light" aria-label="Risk dashboard">
+              <div class="light light-high"></div>
+              <div class="light light-medium"></div>
+              <div class="light light-low"></div>
+            </div>
+
+            <div class="score-block">
+              <div class="score-row">
+                <span class="score-label">Risk level</span>
+                <span id="riskBadge" class="pill pill-risk">Medium</span>
+              </div>
+              <div id="riskScore" class="score">52</div>
+              <p class="score-caption">out of 100</p>
+            </div>
+          </div>
+
+          <div class="reason-box">
+            <h3>Reason</h3>
+            <p id="riskReason">Too little free time before deadline.</p>
+          </div>
+
+          <div class="insights">
+            <div>
+              <span>Hours left</span>
+              <strong id="hoursLeft">168</strong>
+            </div>
+            <div>
+              <span>Suggested focus</span>
+              <strong id="suggestion">Plan an early work block</strong>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="card breakdown-card">
+        <div class="section-head">
+          <h2>Factor breakdown</h2>
+          <p>How each input contributes to your risk score.</p>
+        </div>
+        <div class="factor-grid">
+          <div class="factor-item">
+            <span class="factor-name">Deadline pressure</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-deadline" style="width: 50%"></div></div>
+            <span class="factor-value" id="factor-deadline-val">0</span>
+          </div>
+          <div class="factor-item">
+            <span class="factor-name">Task complexity</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-task" style="width: 60%"></div></div>
+            <span class="factor-value" id="factor-task-val">0</span>
+          </div>
+          <div class="factor-item">
+            <span class="factor-name">Priority weight</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-priority" style="width: 15%"></div></div>
+            <span class="factor-value" id="factor-priority-val">0</span>
+          </div>
+          <div class="factor-item">
+            <span class="factor-name">History risk</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-history" style="width: 24%"></div></div>
+            <span class="factor-value" id="factor-history-val">0</span>
+          </div>
+          <div class="factor-item">
+            <span class="factor-name">Calendar crunch</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-calendar" style="width: 15%"></div></div>
+            <span class="factor-value" id="factor-calendar-val">0</span>
+          </div>
+          <div class="factor-item">
+            <span class="factor-name">Energy drain</span>
+            <div class="factor-bar"><div class="factor-fill" id="factor-energy" style="width: 10%"></div></div>
+            <span class="factor-value" id="factor-energy-val">0</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card task-breakdown-card">
+        <div class="section-head">
+          <h2>Autonomous task breakdown</h2>
+          <p>Convert big tasks into 10–30 min micro-tasks with ideal order.</p>
+        </div>
+        <div class="breakdown-toolbar">
+          <input id="taskToBreakdown" type="text" placeholder="e.g. Prepare interview" maxlength="80" />
+          <button id="breakdownBtn" class="btn btn-primary">Break down</button>
+        </div>
+        <div id="microTaskList" class="micro-task-list"></div>
+      </section>
+
+      <section class="card time-blocking-card">
+        <div class="section-abits-card">
+        <div class="section-head">
+          <h2>Habit + productivity</h2>
+          <p>Track streaks, weekly scores, and personalized recommendations.</p>
+        </div>
+        <div class="habits-grid">
+          <div class="habit-box">
+            <span class="habit-label">Current streak</span>
+            <strong id="habitStreak" class="habit-value">0 days</strong>
+            <p id="habitStreakNote" class="habit-note">Start a task 24h before deadline</p>
+          </div>
+          <div class="habit-box">
+            <span class="habit-label">Weekly productivity</span>
+            <strong id="weeklyScore" class="habit-value">0%</strong>
+            <p id="weeklyNote" class="habit-note">Tasks completed on time</p>
+          </div>
+          <div class="habit-box">
+            <span class="habit-label">Best time slot</span>
+            <strong id="bestTimeSlot" class="habit-value">9–11 AM</strong>
+            <p id="bestTimeNote" class="habit-note">You complete 2x more tasks here</p>
+          </div>
+        </div>
+        <div id="personalizedRecommendations" class="recommendations"></div>
+      </section
+          <h2>Dynamic time-blocking</h2>
+          <p>Drag micro-tasks onto your calendar. AI finds deep-work blocks.</p>
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-header">Today's schedule</div>
+          <div id="calendarSlots" class="calendar-slots"></div>
+        </d
+
+    <!-- Panic Mode View -->
+    <div id="panicModeView" class="panic-mode-view hidden">
+      <div class="panic-header">
+        <h1>🚨 Panic Mode</h1>
+        <button id="exitPanicBtn" class="btn btn-secondary">Exit</button>
+      </div>
+      <div class="panic-content">
+        <div class="panic-timer">
+          <div id="panicTimer" class="timer-display">0:00</div>
+          <button id="focusTimerBtn" class="btn btn-primary">Start 20-min focus</button>
+        </div>
+        <div id="panicTaskList" class="panic-task-list"></div>
+        <div id="panicCheckins" class="panic-checkins"></div>
+      </div>
+    </div>
+
+    <!-- Chat Assistant -->
+    <div class="chat-assistant">
+      <div class="chat-header">
+        <span>Task Assistant</span>
+        <button id="toggleChatBtn" class="btn-icon">▼</button>
+      </div>
+      <div id="chatBox" class="chat-box">
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input-area">
+          <input id="chatInput" type="text" placeholder="'What now?' 'Reschedule after 5 PM' 'I finished task 2'" />
+          <button id="chatSendBtn" class="btn-icon">→</button>
+        </div>
+      </div>
+    </div>iv>
+        <button id="autoScheduleBtn" class="btn btn-secondary" style="margin-top: 1rem;">Auto-schedule remaining tasks</button>
+      </section>
+
+      <section class="card nudges-card">
+        <div class="section-head">
+          <h2>Smart nudges</h2>
+          <p>Context-aware guidance based on your calendar and energy.</p>
+        </div>
+        <div id="nudgesList" class="nudges-list"></div>
+      </section>
+
+      <section class="card task-profiles-card">
+        <div class="section-head">
+          <h2>Task profiles</h2>
+          <p>Save and recall common task templates.</p>
+        </div>
+        <div class="profile-toolbar">
+          <input id="profileName" type="text" placeholder="Give this task a name" maxlength="40" />
+          <button id="saveProfileBtn" class="btn btn-primary">Save profile</button>
+          <button id="loadProfileBtn" class="btn btn-secondary">Load</button>
+        </div>
+        <div id="profileList" class="profile-list"></div>
+      </section>
+
+      <section class="card history-card">
+        <div class="section-head">
+          <h2>Score trends</h2>
+          <p>See how your tasks have scored over time.</p>
+        </div>
+        <div id="historyChart" class="history-chart"></div>
+        <div id="historyTable" class="history-table"></div>
+        <button id="clearHistoryBtn" class="btn btn-danger">Clear all history</button>
+      </section>
+
+      <section class="card roadmap-card">
+        <div class="section-head">
+          <h2>Future upgrades</h2>
+          <p>On the horizon for this engine.</p>
+        </div>
+        <div class="roadmap">
+          <div>
+            <h3>Calendar integration</h3>
+            <p>Connect Google or Outlook to auto-fill calendar load and find deep-work blocks.</p>
+          </div>
+          <div>
+            <h3>Recurring tasks</h3>
+            <p>Learn from completion patterns and adjust history scoring automatically.</p>
+          </div>
+          <div>
+            <h3>Smart notifications</h3>
+            <p>Get alerts when a task drifts into high-risk territory.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
